@@ -1,23 +1,29 @@
 import { useState, useEffect, useCallback } from "react";
 
 const LANGUAGES = [
-  { code: "es", name: "Spanish", flag: "🇪🇸", color: "#FF6B35" },
-  { code: "fr", name: "French", flag: "🇫🇷", color: "#4361EE" },
-  { code: "de", name: "German", flag: "🇩🇪", color: "#F72585" },
-  { code: "ja", name: "Japanese", flag: "🇯🇵", color: "#7209B7" },
-  { code: "sq", name: "Albanian", flag: "🇦🇱", color: "#E63946" },
-  { code: "it", name: "Italian", flag: "🇮🇹", color: "#06D6A0" },
+  { code: "en", name: "Anglisht", flag: "🇬🇧", color: "#1D4ED8" },
+  { code: "es", name: "Spanjisht", flag: "🇪🇸", color: "#FF6B35" },
+  { code: "fr", name: "Frëngjisht", flag: "🇫🇷", color: "#4361EE" },
+  { code: "de", name: "Gjermanisht", flag: "🇩🇪", color: "#F72585" },
+  { code: "ja", name: "Japonisht", flag: "🇯🇵", color: "#7209B7" },
+  { code: "sq", name: "Shqip", flag: "🇦🇱", color: "#E63946" },
+  { code: "it", name: "Italisht", flag: "🇮🇹", color: "#06D6A0" },
 ];
 
 const LESSONS = {
+  en: [
+    { type: "translate", q: "mace", options: ["cat", "dog", "fish", "bird"], answer: "cat", hint: "🐱" },
+    { type: "translate", q: "përshëndetje", options: ["goodbye", "hello", "thanks", "please"], answer: "hello", hint: "👋" },
+    { type: "match", pairs: [["apple", "mollë"], ["water", "ujë"], ["house", "shtëpi"], ["dog", "qen"]] },
+    { type: "translate", q: "të dua", options: ["I love you", "I am sorry", "good night", "how are you"], answer: "I love you", hint: "❤️" },
+    { type: "fill", sentence: "I ___ a student.", answer: "am", options: ["am", "is", "are", "be"], hint: "jam/është" },
+  ],
   es: [
     { type: "translate", q: "cat", options: ["gato", "perro", "pez", "pájaro"], answer: "gato", hint: "🐱" },
     { type: "translate", q: "hello", options: ["adiós", "hola", "gracias", "por favor"], answer: "hola", hint: "👋" },
     { type: "match", pairs: [["apple", "manzana"], ["water", "agua"], ["house", "casa"], ["dog", "perro"]] },
     { type: "translate", q: "I love you", options: ["Te amo", "Lo siento", "Buenas noches", "Cómo estás"], answer: "Te amo", hint: "❤️" },
     { type: "fill", sentence: "Yo ___ un estudiante.", answer: "soy", options: ["soy", "eres", "es", "somos"], hint: "am/is/are" },
-    { type: "translate", q: "beautiful", options: ["hermoso", "feo", "pequeño", "grande"], answer: "hermoso", hint: "✨" },
-    { type: "translate", q: "food", options: ["comida", "bebida", "libro", "ciudad"], answer: "comida", hint: "🍽️" },
   ],
 };
 
@@ -58,7 +64,6 @@ function MatchQuestion({ pairs, onResult }) {
   const [selL, setSelL] = useState(null);
   const [selR, setSelR] = useState(null);
   const [matched, setMatched] = useState([]);
-  const [wrong, setWrong] = useState([]);
 
   useEffect(() => {
     if (selL !== null && selR !== null) {
@@ -69,53 +74,30 @@ function MatchQuestion({ pairs, onResult }) {
         setMatched(next);
         setSelL(null);
         setSelR(null);
-        if (next.length === pairs.length) setTimeout(() => onResult(true), 500);
+        if (next.length === pairs.length) setTimeout(() => onResult(true), 300);
       } else {
-        setWrong([`${selL}L`, `${selR}R`]);
         setTimeout(() => {
           setSelL(null);
           setSelR(null);
-          setWrong([]);
-        }, 700);
+        }, 500);
       }
     }
   }, [selL, selR, left, right, matched, pairs.length, onResult]);
 
-  const btnStyle = (key, type, idx) => {
-    const isMatched = matched.includes(key);
-    const isWrong = wrong.includes(`${idx}${type}`);
-    const isSel = type === "L" ? selL === idx : selR === idx;
-    return {
-      padding: "14px 20px",
-      borderRadius: 16,
-      border: "2px solid",
-      fontFamily: "inherit",
-      fontSize: 15,
-      cursor: isMatched ? "default" : "pointer",
-      fontWeight: 700,
-      transition: "all 0.15s",
-      background: isMatched ? "#d7ffb8" : isWrong ? "#ffd4d4" : isSel ? "#ddf4ff" : "#fff",
-      borderColor: isMatched ? "#58CC02" : isWrong ? "#FF4B4B" : isSel ? "#1CB0F6" : "#e5e7eb",
-      color: isMatched ? "#2d7a00" : isWrong ? "#c0392b" : "#1e293b",
-      opacity: isMatched ? 0.6 : 1,
-      transform: isSel ? "scale(1.03)" : "scale(1)",
-    };
-  };
-
   return (
     <div>
-      <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 24, fontSize: 14 }}>Tap matching pairs</p>
+      <p>Zgjidh çiftet që përputhen:</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {left.map((p, i) => (
-            <button key={i} disabled={matched.includes(p[0])} onClick={() => setSelL(i)} style={btnStyle(p[0], "L", i)}>
+            <button key={`${p[0]}-${i}`} disabled={matched.includes(p[0])} onClick={() => setSelL(i)}>
               {p[0]}
             </button>
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {right.map((p, i) => (
-            <button key={i} disabled={matched.includes(p[0])} onClick={() => setSelR(i)} style={btnStyle(p[0], "R", i)}>
+            <button key={`${p[1]}-${i}`} disabled={matched.includes(p[0])} onClick={() => setSelR(i)}>
               {p[1]}
             </button>
           ))}
@@ -138,7 +120,7 @@ export default function Duolingo() {
   const [correct, setCorrect] = useState(null);
   const [showConf, setShowConf] = useState(false);
 
-  const lessons = lang ? LESSONS[lang.code] : [];
+  const lessons = lang ? LESSONS[lang.code] || [] : [];
   const question = lessons[qIdx];
 
   const startLesson = (l) => {
@@ -172,8 +154,8 @@ export default function Duolingo() {
   };
 
   const checkAnswer = () => {
-    if (answered) return;
-    const ans = question.type === "fill" ? fillVal : selected;
+    if (answered || !question) return;
+    const ans = question.type === "fill" ? fillVal.trim() : selected;
     const ok = ans === question.answer;
     setAnswered(true);
     setCorrect(ok);
@@ -184,10 +166,13 @@ export default function Duolingo() {
   if (screen === "home") {
     return (
       <div>
-        <h1>Duolingo Clone</h1>
-        <p>🔥 {streak} day streak · ⚡ {xp} XP</p>
+        <h1>Mëso gjuhë me Duo</h1>
+        <p>🔥 Seria: {streak} ditë · ⚡ XP: {xp}</p>
+        <p>Zgjidh gjuhën që dëshiron të mësosh:</p>
         {LANGUAGES.map((l) => (
-          <button key={l.code} onClick={() => startLesson(l)}>{l.flag} {l.name}</button>
+          <button key={l.code} onClick={() => startLesson(l)}>
+            {l.flag} {l.name}
+          </button>
         ))}
       </div>
     );
@@ -198,14 +183,24 @@ export default function Duolingo() {
     return (
       <div>
         {showConf && <Confetti />}
-        <h2>{won ? "Lesson Complete!" : "Out of Hearts!"}</h2>
-        <button onClick={() => setScreen("home")}>Back to Home</button>
+        <h2>{won ? "Mësimi u përfundua!" : "Nuk ke më zemra!"}</h2>
+        <p>{won ? `Fitove ${xp} XP.` : "Provoje edhe një herë."}</p>
+        <button onClick={() => setScreen("home")}>Kthehu në fillim</button>
       </div>
     );
   }
 
-  const isMatch = question?.type === "match";
-  const canCheck = isMatch ? false : question?.type === "fill" ? fillVal.trim().length > 0 : selected !== null;
+  if (!question) {
+    return (
+      <div>
+        <p>Kjo gjuhë nuk ka ende mësime.</p>
+        <button onClick={() => setScreen("home")}>Kthehu</button>
+      </div>
+    );
+  }
+
+  const isMatch = question.type === "match";
+  const canCheck = isMatch ? false : question.type === "fill" ? fillVal.trim().length > 0 : selected !== null;
 
   return (
     <div>
@@ -214,17 +209,25 @@ export default function Duolingo() {
         <MatchQuestion pairs={question.pairs} onResult={handleMatchResult} />
       ) : (
         <>
-          <p>{question?.type === "fill" ? question?.sentence : question?.q}</p>
-          {question?.type === "translate" && question.options.map((opt) => (
-            <button key={opt} disabled={answered} onClick={() => setSelected(opt)}>{opt}</button>
-          ))}
-          {question?.type === "fill" && (
-            <input value={fillVal} onChange={(e) => setFillVal(e.target.value)} disabled={answered} />
+          <p>{question.type === "fill" ? question.sentence : `Përkthe: ${question.q}`}</p>
+          {question.type === "translate" &&
+            question.options.map((opt) => (
+              <button key={opt} disabled={answered} onClick={() => setSelected(opt)}>
+                {opt}
+              </button>
+            ))}
+          {question.type === "fill" && (
+            <input
+              value={fillVal}
+              onChange={(e) => setFillVal(e.target.value)}
+              disabled={answered}
+              placeholder="Shkruaj përgjigjen"
+            />
           )}
           <button disabled={!canCheck && !answered} onClick={answered ? advance : checkAnswer}>
-            {answered ? "Continue" : "Check"}
+            {answered ? "Vazhdo" : "Kontrollo"}
           </button>
-          {answered && !correct && <p>Correct answer: {question.answer}</p>}
+          {answered && !correct && <p>Përgjigjja e saktë: {question.answer}</p>}
         </>
       )}
     </div>
